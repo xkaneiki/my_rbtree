@@ -1,0 +1,2 @@
+/usr/bin/ar qc libmyrbtree.a  CMakeFiles/myrbtree.dir/myrbtree.c.o
+/usr/bin/ranlib libmyrbtree.a

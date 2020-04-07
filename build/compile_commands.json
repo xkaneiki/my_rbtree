@@ -1,0 +1,12 @@
+[
+{
+  "directory": "/Users/xkaneiki/Desktop/myrb_tree/build",
+  "command": "/usr/bin/clang  -I/Users/xkaneiki/Desktop/myrb_tree  -g -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk   -o CMakeFiles/main.dir/main.c.o   -c /Users/xkaneiki/Desktop/myrb_tree/main.c",
+  "file": "/Users/xkaneiki/Desktop/myrb_tree/main.c"
+},
+{
+  "directory": "/Users/xkaneiki/Desktop/myrb_tree/build",
+  "command": "/usr/bin/clang  -I/Users/xkaneiki/Desktop/myrb_tree  -g -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk   -o CMakeFiles/myrbtree.dir/myrbtree.c.o   -c /Users/xkaneiki/Desktop/myrb_tree/myrbtree.c",
+  "file": "/Users/xkaneiki/Desktop/myrb_tree/myrbtree.c"
+}
+]

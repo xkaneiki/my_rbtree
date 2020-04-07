@@ -1,0 +1,22 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/Users/xkaneiki/Desktop/myrb_tree/myrbtree.c
+myrbtree.h
+/Users/xkaneiki/Desktop/myrb_tree/myrbtree.h
+
+/Users/xkaneiki/Desktop/myrb_tree/myrbtree.h
+stdio.h
+-
+stdlib.h
+-
+string.h
+-
+math.h
+-
+
