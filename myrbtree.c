@@ -49,6 +49,7 @@ void myrb_right_rotate(myrb_tree *T, struct myrb_node *node)
     return;
 }
 
+/*insert operation*/
 void myrb_insert(myrb_tree *T, KElemType key)
 {
     struct myrb_node *node = (struct myrb_node *)malloc(sizeof(struct myrb_node));
@@ -182,6 +183,7 @@ void myrb_node_insert_fix_up(myrb_tree *T, struct myrb_node *node)
     return;
 }
 
+/*delete operation*/
 void myrb_delete(myrb_tree *T, KElemType key)
 {
     struct myrb_node *node;
@@ -195,100 +197,176 @@ void myrb_delete(myrb_tree *T, KElemType key)
 
 void myrb_node_delete(myrb_tree *T, struct myrb_node *node)
 {
-    // to replace the del node with a leaf node
-    struct myrb_node *del = node, *p;
-    while (del->rc || del->lc)
+    // delete node as T is a binary tree
+    struct myrb_node *del = node, *p, *rp;
+    // if del has both child, then search for the successor
+    if (del->lc && del->rc)
     {
-        // if the successor exists,then search the successor of del node
-        if (del->rc)
-        {
-            p = del->rc;
-            while (p->lc)
-                p = p->lc;
-        }
-        // search the predecessor of del node
-        else
-        {
-            p = del->lc;
-            while (p->rc)
-                p = p->rc;
-        }
+        p = del->rc;
+        while (p->lc)
+            p = p->lc;
 
-        //replace del node by the successor or predecessor
         del->key = p->key;
         del->sval = p->sval;
         del = p;
     }
 
+    rp = NULL;
+    if (del->lc)
+        rp = del->lc;
+    else
+        rp = del->rc;
+    // del has only one child
+    if (rp)
+        rp->par = del->par;
+    if (del->par == NULL) // del is the root then set rp as the root;
+        (*T) = rp;
+    else if (del == del->par->lc)
+    {
+        del->par->lc = rp;
+    }
+    else if (del == del->par->rc)
+    {
+        del->par->rc = rp;
+    }
+
+    myrb_print(*T);
     //del the node and fix up the rb tree
-    myrb_node_delete_fix_up(T, del);
+    struct myrb_node *par = del->par;
+    if (del->col == BLACK)
+        myrb_node_delete_fix_up(T, rp, par);
+
+    // free the space of the del node
+    free(del);
+    myrb_print(*T);
 }
 
-void myrb_node_delete_fix_up(myrb_tree *T, struct myrb_node *del)
+void myrb_node_delete_fix_up(myrb_tree *T, struct myrb_node *node, struct myrb_node *par)
 {
+    // now node has 2 colors, back and node->col
 
-    //case 1:the del node is red,delete it directly
-    if (del->col == RED)
+    // case 1:node is the root,then let node be black
+    if ((*T) == node)
     {
-        if (del->par == NULL) // del node is the root
-            (*T) = NULL;
-        else if (del->par->lc == del)
-            del->par->lc = NULL;
-        else
-            del->par->rc = NULL;
-        free(del);
+        if (node)
+            node->col = BLACK;
+        myrb_print(*T);
         return;
     }
 
-    // case 2:the del node is black
-    struct myrb_node *par, *bro;
-    par = del->par;
+    // case 2:node is not root
+    // case 2.1:node is red with black
+    if (node && node->col == RED)
+    {
+        node->col = BLACK;
+        myrb_print(*T);
+        return;
+    }
 
-    // case 2.1:del is the lc of its parent
-    if (del == par->lc)
+    // case 2.2:node is black with black
+    struct myrb_node *bro = NULL;
+
+    if (node)
+    {
+        par = node->par;
+    }
+
+    if (node == par->lc) //node is lc
     {
         bro = par->rc;
-        //case 2.1.1: change 2.1.1 into 2.1.2.3
-        if (bro->col == RED)
+        //case 2.2.1:bro is red then change it to black
+        if (bro && bro->col == RED)
         {
             bro->col = BLACK;
             par->col = RED;
             myrb_left_rotate(T, par);
-            myrb_node_delete_fix_up(T, del);
+            //reset bro
+            bro = par->rc;
+
+            myrb_print(*T);
+        }
+
+        //bro is black
+        //case 2.2.2:both childs of bro are black
+        if ((!bro->lc || bro->lc == BLACK) && (!bro->rc || bro->rc == BLACK))
+        {
+            bro->col = RED;
+
+            myrb_print(*T);
+
+            myrb_node_delete_fix_up(T, par, NULL); //set par as the new node to fix up
             return;
         }
-        //case 2.1.2: bro color is black
+        //case 2.2.3:lc of bro are red,then change into case 2.2.4
+        if (bro->lc && bro->lc->col == RED)
+        {
+            bro->col = RED;
+            bro->lc->col = BLACK;
+            myrb_right_rotate(T, bro);
+            // reset bro
+            bro = par->rc;
 
-        //case 2.1.2.1
+            myrb_print(*T);
+        }
+        // case 2.2.4:rc of bro are red
         if (bro->rc && bro->rc->col == RED)
         {
             bro->col = par->col;
             par->col = BLACK;
             bro->rc->col = BLACK;
             myrb_left_rotate(T, par);
-            del->col = RED;
-            myrb_node_delete_fix_up(T, del);
+            myrb_print(*T);
+            // myrb_node_delete_fix_up(T, bro, NULL); //set the pra as the new node to fix up
             return;
         }
-
-        // case 2.1.2.2 :change into 2.1.2.1
-        if ((bro->lc && bro->lc->col == RED) && (!bro->rc || bro->rc->col == BLACK))
-        {
-            bro->lc->col = BLACK;
-            bro->col = RED;
-            myrb_right_rotate(T, bro);
-            myrb_node_delete_fix_up(T, del);
-            return;
-        }
-
-        // case 2.1.2.3:
-        bro->col=RED;
-
     }
-    // case 2.2:del is the rc of its parent
-    else
+    else //node is rc
     {
         bro = par->lc;
+        //case 2.2.1:bro is red then change it to black
+        if (bro && bro->col == RED)
+        {
+            bro->col = BLACK;
+            par->col = RED;
+            myrb_right_rotate(T, par);
+            //reset bro
+            bro = par->lc;
+
+            myrb_print(*T);
+        }
+
+        //bro is black
+        //case 2.2.2:both childs of bro are black
+        if ((!bro->lc || bro->lc->col == BLACK) && (!bro->rc || bro->rc->col == BLACK))
+        {
+            bro->col = RED;
+            myrb_print(*T);
+            myrb_node_delete_fix_up(T, par, NULL); //set par as the new node to fix up
+            return;
+        }
+
+        //case 2.2.3:rc of bro are red,then change into case 2.2.4
+        if (bro->rc && bro->rc->col == RED)
+        {
+            bro->col = RED;
+            bro->rc->col = BLACK;
+            myrb_left_rotate(T, bro);
+            // reset bro
+            bro = par->lc;
+            myrb_print(*T);
+        }
+
+        // case 2.2.4:lc of bro are red
+        if (bro->lc && bro->lc->col == RED)
+        {
+            bro->col = par->col;
+            par->col = BLACK;
+            bro->lc->col = BLACK;
+            myrb_right_rotate(T, par);
+            myrb_print(*T);
+            // myrb_node_delete_fix_up(T, bro, NULL); //set the pra as the new node to fix up
+            return;
+        }
     }
 }
 
@@ -355,4 +433,15 @@ int myrb_depth(myrb_tree T)
     if (l > r)
         return l + 1;
     return r + 1;
+}
+
+void myrb_free(myrb_tree T)
+{
+    if (T)
+    {
+        myrb_free(T->lc);
+        myrb_free(T->rc);
+        free(T);
+    }
+    return;
 }
